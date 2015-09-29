@@ -166,6 +166,10 @@ public abstract class ConnectivityIntentCommand extends AbstractShellCommand {
             required = false, multiValued = false)
     private String pushVlan = null;
 
+    @Option(name = "--setQueueId", description = "Set Qos Queue ID",
+            required = false, multiValued = false)
+    private String setQueueId = null;
+
     // Priorities
     @Option(name = "-p", aliases = "--priority", description = "Priority",
             required = false, multiValued = false)
@@ -325,6 +329,10 @@ public abstract class ConnectivityIntentCommand extends AbstractShellCommand {
         if (!isNullOrEmpty(pushVlan)) {
             treatmentBuilder.pushVlan();
             treatmentBuilder.setVlanId(VlanId.vlanId(Short.parseShort(pushVlan)));
+            emptyTreatment = false;
+        }
+        if (!isNullOrEmpty(setQueueId)) {
+            treatmentBuilder.setQueue(Long.parseLong(setQueueId));
             emptyTreatment = false;
         }
 
