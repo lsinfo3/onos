@@ -61,6 +61,7 @@ import org.projectfloodlight.openflow.protocol.OFPortDescStatsReply;
 import org.projectfloodlight.openflow.protocol.OFPortDescStatsRequest;
 import org.projectfloodlight.openflow.protocol.OFPortStatus;
 import org.projectfloodlight.openflow.protocol.OFQueueGetConfigReply;
+import org.projectfloodlight.openflow.protocol.OFQueueGetConfigRequest;
 import org.projectfloodlight.openflow.protocol.OFRoleReply;
 import org.projectfloodlight.openflow.protocol.OFSetConfig;
 import org.projectfloodlight.openflow.protocol.OFStatsReply;
@@ -190,14 +191,14 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 // we are just checking the version number.
                 if (m.getVersion().getWireVersion() >= OFVersion.OF_13.getWireVersion()) {
                     log.debug("Received {} Hello from {} - switching to OF "
-                            + "version 1.3", m.getVersion(),
-                            h.channel.getRemoteAddress());
+                                      + "version 1.3", m.getVersion(),
+                              h.channel.getRemoteAddress());
                     h.sendHandshakeHelloMessage();
                     h.ofVersion = OFVersion.OF_13;
                 } else if (m.getVersion().getWireVersion() >= OFVersion.OF_10.getWireVersion()) {
                     log.debug("Received {} Hello from {} - switching to OF "
-                            + "version 1.0", m.getVersion(),
-                            h.channel.getRemoteAddress());
+                                      + "version 1.0", m.getVersion(),
+                              h.channel.getRemoteAddress());
                     OFHello hi =
                             h.factory10.buildHello()
                                     .setXid(h.handshakeTransactionIds--)
@@ -206,9 +207,9 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                     h.ofVersion = OFVersion.OF_10;
                 } else {
                     log.error("Received Hello of version {} from switch at {}. "
-                            + "This controller works with OF1.0 and OF1.3 "
-                            + "switches. Disconnecting switch ...",
-                            m.getVersion(), h.channel.getRemoteAddress());
+                                      + "This controller works with OF1.0 and OF1.3 "
+                                      + "switches. Disconnecting switch ...",
+                              m.getVersion(), h.channel.getRemoteAddress());
                     h.channel.disconnect();
                     return;
                 }
@@ -216,14 +217,14 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 h.setState(WAIT_FEATURES_REPLY);
             }
             @Override
-            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m)
+            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m)
                     throws IOException, SwitchStateException {
                 illegalMessageReceived(h, m);
             }
             @Override
             void processOFStatisticsReply(OFChannelHandler h,
-                    OFStatsReply  m)
-                            throws IOException, SwitchStateException {
+                                          OFStatsReply m)
+                    throws IOException, SwitchStateException {
                 illegalMessageReceived(h, m);
             }
             @Override
@@ -248,11 +249,11 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          */
         WAIT_FEATURES_REPLY(false) {
             @Override
-            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m)
+            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m)
                     throws IOException {
                 h.thisdpid = m.getDatapathId().getLong();
                 log.debug("Received features reply for switch at {} with dpid {}",
-                        h.getSwitchInfoString(), h.thisdpid);
+                          h.getSwitchInfoString(), h.thisdpid);
 
                 h.featuresReply = m; //temp store
                 if (h.ofVersion == OFVersion.OF_10) {
@@ -266,8 +267,8 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
             @Override
             void processOFStatisticsReply(OFChannelHandler h,
-                    OFStatsReply  m)
-                            throws IOException, SwitchStateException {
+                                          OFStatsReply m)
+                    throws IOException, SwitchStateException {
                 illegalMessageReceived(h, m);
             }
             @Override
@@ -295,28 +296,28 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 // Read port description
                 if (m.getStatsType() != OFStatsType.PORT_DESC) {
                     log.warn("Expecting port description stats but received stats "
-                            + "type {} from {}. Ignoring ...", m.getStatsType(),
-                            h.channel.getRemoteAddress());
+                                     + "type {} from {}. Ignoring ...", m.getStatsType(),
+                             h.channel.getRemoteAddress());
                     return;
                 }
                 if (m.getFlags().contains(OFStatsReplyFlags.REPLY_MORE)) {
                     log.debug("Stats reply indicates more stats from sw {} for "
-                            + "port description",
-                            h.getSwitchInfoString());
-                    h.portDescReplies.add((OFPortDescStatsReply)m);
+                                      + "port description",
+                              h.getSwitchInfoString());
+                    h.portDescReplies.add((OFPortDescStatsReply) m);
                     return;
                 }
                 else {
-                    h.portDescReplies.add((OFPortDescStatsReply)m);
+                    h.portDescReplies.add((OFPortDescStatsReply) m);
                 }
                 //h.portDescReply = (OFPortDescStatsReply) m; // temp store
                 log.info("Received port desc reply for switch at {}",
-                        h.getSwitchInfoString());
+                         h.getSwitchInfoString());
                 try {
                     h.sendHandshakeSetConfig();
                 } catch (IOException e) {
                     log.error("Unable to send setConfig after PortDescReply. "
-                            + "Error: {}", e.getMessage());
+                                      + "Error: {}", e.getMessage());
                 }
                 h.setState(WAIT_CONFIG_REPLY);
             }
@@ -347,15 +348,15 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                     throws IOException {
                 if (m.getMissSendLen() == 0xffff) {
                     log.trace("Config Reply from switch {} confirms "
-                            + "miss length set to 0xffff",
-                            h.getSwitchInfoString());
+                                      + "miss length set to 0xffff",
+                              h.getSwitchInfoString());
                 } else {
                     // FIXME: we can't really deal with switches that don't send
                     // full packets. Shouldn't we drop the connection here?
                     log.warn("Config Reply from switch {} has"
-                            + "miss length set to {}",
-                            h.getSwitchInfoString(),
-                            m.getMissSendLen());
+                                     + "miss length set to {}",
+                             h.getSwitchInfoString(),
+                             m.getMissSendLen());
                 }
                 h.sendHandshakeDescriptionStatsRequest();
                 h.setState(WAIT_DESCRIPTION_STAT_REPLY);
@@ -367,16 +368,16 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
 
             @Override
-            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m)
+            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m)
                     throws IOException, SwitchStateException {
                 illegalMessageReceived(h, m);
             }
             @Override
             void processOFStatisticsReply(OFChannelHandler h,
-                    OFStatsReply  m)
-                            throws IOException, SwitchStateException {
+                                          OFStatsReply m)
+                    throws IOException, SwitchStateException {
                 log.error("Received multipart(stats) message sub-type {}",
-                        m.getStatsType());
+                          m.getStatsType());
                 illegalMessageReceived(h, m);
             }
 
@@ -398,17 +399,17 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * Once we receive any stat message we try to parse it. If it's not
          * a description stats message we disconnect. If its the expected
          * description stats message, we:
-         *    - use the switch driver to bind the switch and get an IOFSwitch instance
-         *    - setup the IOFSwitch instance
-         *    - add switch controller and send the initial role
-         *      request to the switch.
+         * - use the switch driver to bind the switch and get an IOFSwitch instance
+         * - setup the IOFSwitch instance
+         * - add switch controller and send the initial role
+         * request to the switch.
          * Next state: WAIT_INITIAL_ROLE
-         *      In the typical case, where switches support role request messages
-         *      the next state is where we expect the role reply message.
-         *      In the special case that where the switch does not support any kind
-         *      of role request messages, we don't send a role message, but we do
-         *      request mastership from the registry service. This controller
-         *      should become master once we hear back from the registry service.
+         * In the typical case, where switches support role request messages
+         * the next state is where we expect the role reply message.
+         * In the special case that where the switch does not support any kind
+         * of role request messages, we don't send a role message, but we do
+         * request mastership from the registry service. This controller
+         * should become master once we hear back from the registry service.
          * All following states will have a h.sw instance!
          */
         WAIT_DESCRIPTION_STAT_REPLY(false) {
@@ -418,8 +419,8 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 // Read description, if it has been updated
                 if (m.getStatsType() != OFStatsType.DESC) {
                     log.warn("Expecting Description stats but received stats "
-                            + "type {} from {}. Ignoring ...", m.getStatsType(),
-                            h.channel.getRemoteAddress());
+                                     + "type {} from {}. Ignoring ...", m.getStatsType(),
+                             h.channel.getRemoteAddress());
                     return;
                 }
                 OFDescStatsReply drep = (OFDescStatsReply) m;
@@ -445,24 +446,19 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
 
                 log.debug("Switch {} bound to class {}, description {}",
-                        new Object[] {h.sw, h.sw.getClass(), drep });
+                          new Object[]{h.sw, h.sw.getClass(), drep});
                 //Put switch in EQUAL mode until we hear back from the global registry
                 //log.debug("Setting new switch {} to EQUAL and sending Role request",
                 //        h.sw.getStringId());
                 //h.sw.activateEqualSwitch();
                 //h.setSwitchRole(RoleState.EQUAL);
 
-                h.sw.startDriverHandshake();
-                if (h.sw.isDriverHandshakeComplete()) {
-                    if (!h.sw.connectSwitch()) {
-                        disconnectDuplicate(h);
-                    }
-                    handlePendingPortStatusMessages(h);
-                    h.setState(ACTIVE);
+                if (h.ofVersion == OFVersion.OF_13) {
+                    h.sendHandshakeQueueConfigRequestMessage();
+                    h.setState(WAIT_QUEUE_CONFIG_REPLY);
                 } else {
-                    h.setState(WAIT_SWITCH_DRIVER_SUB_HANDSHAKE);
+                    startDriverHandshake(h);
                 }
-
             }
 
             @Override
@@ -471,7 +467,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
 
             @Override
-            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m)
+            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m)
                     throws IOException, SwitchStateException {
                 illegalMessageReceived(h, m);
             }
@@ -483,6 +479,27 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
         },
 
+        WAIT_QUEUE_CONFIG_REPLY(false) {
+            @Override
+            void processOFError(OFChannelHandler h, OFErrorMsg m) throws IOException, SwitchStateException {
+                logErrorDisconnect(h, m);
+            }
+
+            @Override
+            void processOFPortStatus(OFChannelHandler h, OFPortStatus m) throws IOException, SwitchStateException {
+                illegalMessageReceived(h, m);
+
+            }
+
+            @Override
+            void processOFQueueGetConfigReply(OFChannelHandler h, OFQueueGetConfigReply m) {
+
+                h.sw.setQueueConfigReply(m);
+
+                startDriverHandshake(h);
+            }
+
+        },
 
         /**
          * We are waiting for the respective switch driver to complete its
@@ -520,7 +537,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 } else if (m.getType() == OFType.ROLE_REPLY) {
                     h.sw.handleRole(m);
                 } else if (m.getType() == OFType.ERROR) {
-                    if (!h.sw.handleRoleError((OFErrorMsg)m)) {
+                    if (!h.sw.handleRoleError((OFErrorMsg) m)) {
                         h.sw.processDriverHandshakeMessage(m);
                         if (h.sw.isDriverHandshakeComplete()) {
                             moveToActive(h);
@@ -529,7 +546,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 } else {
                     if (m.getType() == OFType.EXPERIMENTER &&
                             ((OFExperimenter) m).getExperimenter() ==
-                            RoleManager.NICIRA_EXPERIMENTER) {
+                                    RoleManager.NICIRA_EXPERIMENTER) {
                         h.sw.handleNiciraRole(m);
                     } else {
                         h.sw.processDriverHandshakeMessage(m);
@@ -577,7 +594,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 // if we get here, then the error message is for something else
                 if (m.getErrType() == OFErrorType.BAD_REQUEST &&
                         ((OFBadRequestErrorMsg) m).getCode() ==
-                        OFBadRequestCode.EPERM) {
+                                OFBadRequestCode.EPERM) {
                     // We are the master controller and the switch returned
                     // a permission error. This is a likely indicator that
                     // the switch thinks we are slave. Reassert our
@@ -590,7 +607,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                     h.sw.reassertRole();
                 } else if (m.getErrType() == OFErrorType.FLOW_MOD_FAILED &&
                         ((OFFlowModFailedErrorMsg) m).getCode() ==
-                        OFFlowModFailedCode.ALL_TABLES_FULL) {
+                                OFFlowModFailedCode.ALL_TABLES_FULL) {
                     h.sw.setTableFull(true);
                 } else {
                     logError(h, m);
@@ -600,7 +617,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
             @Override
             void processOFStatisticsReply(OFChannelHandler h,
-                    OFStatsReply m) {
+                                          OFStatsReply m) {
                 if (m.getStatsType().equals(OFStatsType.PORT_DESC)) {
                     h.sw.setPortDescReply((OFPortDescStatsReply) m);
                 }
@@ -638,7 +655,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
             @Override
             void processOFFlowRemoved(OFChannelHandler h,
-                    OFFlowRemoved m) {
+                                      OFFlowRemoved m) {
                 h.dispatchMessage(m);
             }
 
@@ -648,7 +665,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
 
             @Override
-            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m) {
+            void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m) {
                 h.sw.setFeaturesReply(m);
                 h.dispatchMessage(m);
             }
@@ -672,22 +689,22 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * Get a string specifying the switch connection, state, and
          * message received. To be used as message for SwitchStateException
          * or log messages
-         * @param h The channel handler (to get switch information_
-         * @param m The OFMessage that has just been received
+         * @param h       The channel handler (to get switch information_
+         * @param m       The OFMessage that has just been received
          * @param details A string giving more details about the exact nature
-         * of the problem.
+         *                of the problem.
          * @return display string
          */
-        // needs to be protected because enum members are actually subclasses
+// needs to be protected because enum members are actually subclasses
         protected String getSwitchStateMessage(OFChannelHandler h,
-                OFMessage m,
-                String details) {
+                                               OFMessage m,
+                                               String details) {
             return String.format("Switch: [%s], State: [%s], received: [%s]"
-                    + ", details: %s",
-                    h.getSwitchInfoString(),
-                    this.toString(),
-                    m.getType().toString(),
-                    details);
+                                         + ", details: %s",
+                                 h.getSwitchInfoString(),
+                                 this.toString(),
+                                 m.getType().toString(),
+                                 details);
         }
 
         /**
@@ -699,11 +716,11 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * @param m the message
          * @throws SwitchStateException we always throw the exception
          */
-        // needs to be protected because enum members are actually subclasses
+// needs to be protected because enum members are actually subclasses
         protected void illegalMessageReceived(OFChannelHandler h, OFMessage m)
                 throws SwitchStateException {
             String msg = getSwitchStateMessage(h, m,
-                    "Switch should never send this message in the current state");
+                                               "Switch should never send this message in the current state");
             throw new SwitchStateException(msg);
 
         }
@@ -715,32 +732,32 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * @param m the message
          */
         protected void unhandledMessageReceived(OFChannelHandler h,
-                OFMessage m) {
+                                                OFMessage m) {
             if (log.isDebugEnabled()) {
                 String msg = getSwitchStateMessage(h, m,
-                        "Ignoring unexpected message");
+                                                   "Ignoring unexpected message");
                 log.debug(msg);
             }
         }
 
         /**
          * Log an OpenFlow error message from a switch.
-         * @param h The switch that sent the error
+         * @param h     The switch that sent the error
          * @param error The error message
          */
         protected void logError(OFChannelHandler h, OFErrorMsg error) {
             log.error("{} from switch {} in state {}",
-                    new Object[] {
-                    error,
-                    h.getSwitchInfoString(),
-                    this.toString()});
+                      new Object[]{
+                              error,
+                              h.getSwitchInfoString(),
+                              this.toString()});
         }
 
         /**
          * Log an OpenFlow error message from a switch and disconnect the
          * channel.
          *
-         * @param h the IO channel for this switch.
+         * @param h     the IO channel for this switch.
          * @param error The error message
          */
         protected void logErrorDisconnect(OFChannelHandler h, OFErrorMsg error) {
@@ -749,12 +766,29 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
         }
 
         /**
+         * Start the handshake of the driver
+         * @param h the IOchannel for this switch
+         */
+        protected void startDriverHandshake(OFChannelHandler h) {
+            h.sw.startDriverHandshake();
+            if (h.sw.isDriverHandshakeComplete()) {
+                if (!h.sw.connectSwitch()) {
+                    disconnectDuplicate(h);
+                }
+                handlePendingPortStatusMessages(h);
+                h.setState(ACTIVE);
+            } else {
+                h.setState(WAIT_SWITCH_DRIVER_SUB_HANDSHAKE);
+            }
+        }
+
+        /**
          * log an error message for a duplicate dpid and disconnect this channel.
          * @param h the IO channel for this switch.
          */
         protected void disconnectDuplicate(OFChannelHandler h) {
             log.error("Duplicated dpid or incompleted cleanup - "
-                    + "disconnecting channel {}", h.getSwitchInfoString());
+                              + "disconnecting channel {}", h.getSwitchInfoString());
             h.duplicateDpidFound = Boolean.TRUE;
             h.channel.disconnect();
         }
@@ -789,8 +823,8 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             log.info("Processing {} pending port status messages for {}",
                      h.pendingPortStatusMsg.size(), h.sw.getStringId());
 
-            ArrayList<OFPortStatus> temp  = new ArrayList<OFPortStatus>();
-            for (OFPortStatus ps: h.pendingPortStatusMsg) {
+            ArrayList<OFPortStatus> temp = new ArrayList<OFPortStatus>();
+            for (OFPortStatus ps : h.pendingPortStatusMsg) {
                 temp.add(ps);
                 handlePortStatusMessage(h, ps, false);
             }
@@ -814,19 +848,19 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * IOFSwitch instance and notifying Controller about the change so
          * it can dispatch a switch update.
          *
-         * @param h The OFChannelHhandler that received the message
-         * @param m The PortStatus message we received
+         * @param h        The OFChannelHhandler that received the message
+         * @param m        The PortStatus message we received
          * @param doNotify if true switch port changed events will be
-         * dispatched
+         *                 dispatched
          * @throws SwitchStateException if the switch is not bound to the channel
          *
          */
         protected void handlePortStatusMessage(OFChannelHandler h, OFPortStatus m,
-                boolean doNotify) throws SwitchStateException {
+                                               boolean doNotify) throws SwitchStateException {
             if (h.sw == null) {
                 String msg = getSwitchStateMessage(h, m,
-                        "State machine error: switch is null. Should never " +
-                        "happen");
+                                                   "State machine error: switch is null. Should never " +
+                                                           "happen");
                 throw new SwitchStateException(msg);
             }
 
@@ -851,76 +885,76 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
          * @param h The OFChannelHandler that received the message
          * @param m The message we received.
          * @throws SwitchStateException if the switch is not bound to the channel
-         * @throws IOException if unable to send message back to the switch
+         * @throws IOException          if unable to send message back to the switch
          */
         void processOFMessage(OFChannelHandler h, OFMessage m)
                 throws IOException, SwitchStateException {
-            switch(m.getType()) {
-            case HELLO:
-                processOFHello(h, (OFHello) m);
-                break;
-            case BARRIER_REPLY:
-                processOFBarrierReply(h, (OFBarrierReply) m);
-                break;
-            case ECHO_REPLY:
-                processOFEchoReply(h, (OFEchoReply) m);
-                break;
-            case ECHO_REQUEST:
-                processOFEchoRequest(h, (OFEchoRequest) m);
-                break;
-            case ERROR:
-                processOFError(h, (OFErrorMsg) m);
-                break;
-            case FEATURES_REPLY:
-                processOFFeaturesReply(h, (OFFeaturesReply) m);
-                break;
-            case FLOW_REMOVED:
-                processOFFlowRemoved(h, (OFFlowRemoved) m);
-                break;
-            case GET_CONFIG_REPLY:
-                processOFGetConfigReply(h, (OFGetConfigReply) m);
-                break;
-            case PACKET_IN:
-                processOFPacketIn(h, (OFPacketIn) m);
-                break;
-            case PORT_STATUS:
-                processOFPortStatus(h, (OFPortStatus) m);
-                break;
-            case QUEUE_GET_CONFIG_REPLY:
-                processOFQueueGetConfigReply(h, (OFQueueGetConfigReply) m);
-                break;
-            case STATS_REPLY: // multipart_reply in 1.3
-                processOFStatisticsReply(h, (OFStatsReply) m);
-                break;
-            case EXPERIMENTER:
-                processOFExperimenter(h, (OFExperimenter) m);
-                break;
-            case ROLE_REPLY:
-                processOFRoleReply(h, (OFRoleReply) m);
-                break;
-            case GET_ASYNC_REPLY:
-                processOFGetAsyncReply(h, (OFAsyncGetReply) m);
-                break;
+            switch (m.getType()) {
+                case HELLO:
+                    processOFHello(h, (OFHello) m);
+                    break;
+                case BARRIER_REPLY:
+                    processOFBarrierReply(h, (OFBarrierReply) m);
+                    break;
+                case ECHO_REPLY:
+                    processOFEchoReply(h, (OFEchoReply) m);
+                    break;
+                case ECHO_REQUEST:
+                    processOFEchoRequest(h, (OFEchoRequest) m);
+                    break;
+                case ERROR:
+                    processOFError(h, (OFErrorMsg) m);
+                    break;
+                case FEATURES_REPLY:
+                    processOFFeaturesReply(h, (OFFeaturesReply) m);
+                    break;
+                case FLOW_REMOVED:
+                    processOFFlowRemoved(h, (OFFlowRemoved) m);
+                    break;
+                case GET_CONFIG_REPLY:
+                    processOFGetConfigReply(h, (OFGetConfigReply) m);
+                    break;
+                case PACKET_IN:
+                    processOFPacketIn(h, (OFPacketIn) m);
+                    break;
+                case PORT_STATUS:
+                    processOFPortStatus(h, (OFPortStatus) m);
+                    break;
+                case QUEUE_GET_CONFIG_REPLY:
+                    processOFQueueGetConfigReply(h, (OFQueueGetConfigReply) m);
+                    break;
+                case STATS_REPLY: // multipart_reply in 1.3
+                    processOFStatisticsReply(h, (OFStatsReply) m);
+                    break;
+                case EXPERIMENTER:
+                    processOFExperimenter(h, (OFExperimenter) m);
+                    break;
+                case ROLE_REPLY:
+                    processOFRoleReply(h, (OFRoleReply) m);
+                    break;
+                case GET_ASYNC_REPLY:
+                    processOFGetAsyncReply(h, (OFAsyncGetReply) m);
+                    break;
 
                 // The following messages are sent to switches. The controller
                 // should never receive them
-            case SET_CONFIG:
-            case GET_CONFIG_REQUEST:
-            case PACKET_OUT:
-            case PORT_MOD:
-            case QUEUE_GET_CONFIG_REQUEST:
-            case BARRIER_REQUEST:
-            case STATS_REQUEST: // multipart request in 1.3
-            case FEATURES_REQUEST:
-            case FLOW_MOD:
-            case GROUP_MOD:
-            case TABLE_MOD:
-            case GET_ASYNC_REQUEST:
-            case SET_ASYNC:
-            case METER_MOD:
-            default:
-                illegalMessageReceived(h, m);
-                break;
+                case SET_CONFIG:
+                case GET_CONFIG_REQUEST:
+                case PACKET_OUT:
+                case PORT_MOD:
+                case QUEUE_GET_CONFIG_REQUEST:
+                case BARRIER_REQUEST:
+                case STATS_REQUEST: // multipart request in 1.3
+                case FEATURES_REQUEST:
+                case FLOW_MOD:
+                case GROUP_MOD:
+                case TABLE_MOD:
+                case GET_ASYNC_REQUEST:
+                case SET_ASYNC:
+                case METER_MOD:
+                default:
+                    illegalMessageReceived(h, m);
+                    break;
             }
         }
 
@@ -953,17 +987,17 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 throws IOException {
             if (h.ofVersion == null) {
                 log.error("No OF version set for {}. Not sending Echo REPLY",
-                        h.channel.getRemoteAddress());
+                          h.channel.getRemoteAddress());
                 return;
             }
             OFFactory factory = (h.ofVersion == OFVersion.OF_13) ?
                     h.controller.getOFMessageFactory13() : h.controller.getOFMessageFactory10();
-                    OFEchoReply reply = factory
-                            .buildEchoReply()
-                            .setXid(m.getXid())
-                            .setData(m.getData())
-                            .build();
-                    h.channel.write(Collections.singletonList(reply));
+            OFEchoReply reply = factory
+                    .buildEchoReply()
+                    .setXid(m.getXid())
+                    .setData(m.getData())
+                    .build();
+            h.channel.write(Collections.singletonList(reply));
         }
 
         void processOFEchoReply(OFChannelHandler h, OFEchoReply m)
@@ -972,12 +1006,12 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
         }
 
         // no default implementation for OFError
-        // every state must override it
+// every state must override it
         abstract void processOFError(OFChannelHandler h, OFErrorMsg m)
                 throws IOException, SwitchStateException;
 
 
-        void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply  m)
+        void processOFFeaturesReply(OFChannelHandler h, OFFeaturesReply m)
                 throws IOException, SwitchStateException {
             unhandledMessageReceived(h, m);
         }
@@ -1003,8 +1037,8 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 throws IOException, SwitchStateException;
 
         void processOFQueueGetConfigReply(OFChannelHandler h,
-                OFQueueGetConfigReply m)
-                        throws IOException {
+                                          OFQueueGetConfigReply m)
+                throws IOException {
             unhandledMessageReceived(h, m);
         }
 
@@ -1027,7 +1061,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
         }
 
         void processOFGetAsyncReply(OFChannelHandler h,
-                OFAsyncGetReply m) {
+                                    OFAsyncGetReply m) {
             unhandledMessageReceived(h, m);
         }
 
@@ -1035,16 +1069,16 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
 
 
-    //*************************
-    //  Channel handler methods
-    //*************************
+//*************************
+//  Channel handler methods
+//*************************
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx,
-            ChannelStateEvent e) throws Exception {
+                                 ChannelStateEvent e) throws Exception {
         channel = e.getChannel();
         log.info("New switch connection from {}",
-                channel.getRemoteAddress());
+                 channel.getRemoteAddress());
         /*
             hack to wait for the switch to tell us what it's
             max version is. This is not spec compliant and should
@@ -1056,9 +1090,9 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx,
-            ChannelStateEvent e) throws Exception {
+                                    ChannelStateEvent e) throws Exception {
         log.info("Switch disconnected callback for sw:{}. Cleaning up ...",
-                getSwitchInfoString());
+                 getSwitchInfoString());
         if (thisdpid != 0) {
             if (!duplicateDpidFound) {
                 // if the disconnected switch (on this ChannelHandler)
@@ -1080,7 +1114,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             }
         } else {
             log.warn("no dpid in channelHandler registered for "
-                    + "disconnected switch {}", getSwitchInfoString());
+                             + "disconnected switch {}", getSwitchInfoString());
         }
     }
 
@@ -1090,11 +1124,11 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
         if (e.getCause() instanceof ReadTimeoutException) {
             // switch timeout
             log.error("Disconnecting switch {} due to read timeout",
-                    getSwitchInfoString());
+                      getSwitchInfoString());
             ctx.getChannel().close();
         } else if (e.getCause() instanceof HandshakeTimeoutException) {
             log.error("Disconnecting switch {}: failed to complete handshake",
-                    getSwitchInfoString());
+                      getSwitchInfoString());
             ctx.getChannel().close();
         } else if (e.getCause() instanceof ClosedChannelException) {
             log.debug("Channel for sw {} already closed", getSwitchInfoString());
@@ -1111,7 +1145,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             ctx.getChannel().close();
         } else if (e.getCause() instanceof SwitchStateException) {
             log.error("Disconnecting switch {} due to switch state error: {}",
-                    getSwitchInfoString(), e.getCause().getMessage());
+                      getSwitchInfoString(), e.getCause().getMessage());
             if (log.isDebugEnabled()) {
                 // still print stack trace if debug is enabled
                 log.debug("StackTrace for previous Exception: ", e.getCause());
@@ -1119,16 +1153,16 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
             ctx.getChannel().close();
         } else if (e.getCause() instanceof OFParseError) {
             log.error("Disconnecting switch "
-                    + getSwitchInfoString() +
-                    " due to message parse failure",
-                    e.getCause());
+                              + getSwitchInfoString() +
+                              " due to message parse failure",
+                      e.getCause());
             ctx.getChannel().close();
         } else if (e.getCause() instanceof RejectedExecutionException) {
             log.warn("Could not process message: queue full");
         } else {
             log.error("Error while processing message from switch "
-                    + getSwitchInfoString()
-                    + "state " + this.state, e.getCause());
+                              + getSwitchInfoString()
+                              + "state " + this.state, e.getCause());
             ctx.getChannel().close();
         }
     }
@@ -1144,7 +1178,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
         OFFactory factory = (ofVersion == OFVersion.OF_13) ? factory13 : factory10;
         OFMessage m = factory.buildEchoRequest().build();
         log.debug("Sending Echo Request on idle channel: {}",
-                e.getChannel().getPipeline().getLast().toString());
+                  e.getChannel().getPipeline().getLast().toString());
         e.getChannel().write(Collections.singletonList(m));
         // XXX S some problems here -- echo request has no transaction id, and
         // echo reply is not correlated to the echo request.
@@ -1169,9 +1203,9 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
 
 
-    //*************************
-    //  Channel utility methods
-    //*************************
+//*************************
+//  Channel utility methods
+//*************************
 
     /**
      * Is this a state in which the handshake has completed?
@@ -1263,9 +1297,9 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
         // Ensure we receive the full packet via PacketIn
         // FIXME: We don't set the reassembly flags.
-	// Only send config to switches to send full packets, if they have a buffer.
+        // Only send config to switches to send full packets, if they have a buffer.
         // Saves a packet & OFSetConfig can't be handled by certain switches.
-        if(this.featuresReply.getNBuffers() > 0) {
+        if (this.featuresReply.getNBuffers() > 0) {
             OFSetConfig sc = factory
                     .buildSetConfig()
                     .setMissSendLen((short) 0xffff)
@@ -1292,6 +1326,7 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
 
     /**
      * send a description state request.
+     *
      * @throws IOException
      */
     private void sendHandshakeDescriptionStatsRequest() throws IOException {
@@ -1312,6 +1347,14 @@ class OFChannelHandler extends IdleStateAwareChannelHandler {
                 .build();
         channel.write(Collections.singletonList(preq));
     }
+
+    private void sendHandshakeQueueConfigRequestMessage() {
+        OFQueueGetConfigRequest oqreq = factory13.buildQueueGetConfigRequest()
+                .setXid(handshakeTransactionIds--)
+                .build();
+        channel.write((Collections.singletonList(oqreq)));
+    }
+
 
     ChannelState getStateForTesting() {
         return state;

@@ -24,6 +24,7 @@ import org.projectfloodlight.openflow.protocol.OFErrorMsg;
 import org.projectfloodlight.openflow.protocol.OFFeaturesReply;
 import org.projectfloodlight.openflow.protocol.OFMessage;
 import org.projectfloodlight.openflow.protocol.OFPortDescStatsReply;
+import org.projectfloodlight.openflow.protocol.OFQueueGetConfigReply;
 import org.projectfloodlight.openflow.protocol.OFVersion;
 
 import java.util.List;
@@ -132,6 +133,12 @@ public interface OpenFlowSwitchDriver extends OpenFlowSwitch, HandlerBehaviour {
      * @param featuresReply the features to set.
      */
     void setFeaturesReply(OFFeaturesReply featuresReply);
+
+    /**
+     * Set the Queue Config reply for this switch
+     * @param queueConfigReply the queue config reply to set
+     */
+    void setQueueConfigReply(OFQueueGetConfigReply queueConfigReply);
 
     /**
      * Sets the switch description.

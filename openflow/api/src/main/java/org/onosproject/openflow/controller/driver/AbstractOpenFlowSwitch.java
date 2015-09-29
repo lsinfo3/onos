@@ -33,6 +33,7 @@ import org.projectfloodlight.openflow.protocol.OFNiciraControllerRoleRequest;
 import org.projectfloodlight.openflow.protocol.OFPortDesc;
 import org.projectfloodlight.openflow.protocol.OFPortDescStatsReply;
 import org.projectfloodlight.openflow.protocol.OFPortStatus;
+import org.projectfloodlight.openflow.protocol.OFQueueGetConfigReply;
 import org.projectfloodlight.openflow.protocol.OFRoleReply;
 import org.projectfloodlight.openflow.protocol.OFRoleRequest;
 import org.projectfloodlight.openflow.protocol.OFVersion;
@@ -78,6 +79,7 @@ public abstract class AbstractOpenFlowSwitch extends AbstractHandlerBehaviour
 
     protected OFFeaturesReply features;
     protected OFDescStatsReply desc;
+    protected OFQueueGetConfigReply queueConfig;
 
     @Override
     public void init(Dpid dpid, OFDescStatsReply desc, OFVersion ofv) {
@@ -185,6 +187,12 @@ public abstract class AbstractOpenFlowSwitch extends AbstractHandlerBehaviour
     public void setFeaturesReply(OFFeaturesReply featuresReply) {
         this.features = featuresReply;
     }
+
+    @Override
+    public void setQueueConfigReply(OFQueueGetConfigReply queueConfigReply) {
+        this.queueConfig = queueConfigReply;
+    }
+
 
     @Override
     public abstract Boolean supportNxRole();
