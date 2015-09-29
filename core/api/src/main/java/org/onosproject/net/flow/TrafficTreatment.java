@@ -415,6 +415,14 @@ public interface TrafficTreatment {
         Builder setUdpDst(TpPort port);
 
         /**
+         * Sets the Queue ID.
+         *
+         * @param queueId a queue ID
+         * @return a treatment builder
+         */
+        Builder setQueue(long queueId);
+
+        /**
          * Builds an immutable traffic treatment descriptor.
          * <p>
          * If the treatment is empty when build() is called, it will add a default

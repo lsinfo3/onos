@@ -274,6 +274,11 @@ public final class DefaultTrafficTreatment implements TrafficTreatment {
         }
 
         @Override
+        public Builder setQueue(long queueId) {
+            return add(Instructions.setQueue(queueId));
+        }
+
+        @Override
         public Builder setEthSrc(MacAddress addr) {
             return add(Instructions.modL2Src(addr));
         }

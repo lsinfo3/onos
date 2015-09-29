@@ -63,6 +63,11 @@ public final class Instructions {
         return new OutputInstruction(number);
     }
 
+    public static SetQueueInstruction setQueue(final long queueId) {
+        checkNotNull(queueId, "queue ID cannot be null");
+        return new SetQueueInstruction(queueId);
+    }
+
     /**
      * Creates a drop instruction.
      *
@@ -546,6 +551,49 @@ public final class Instructions {
             if (obj instanceof OutputInstruction) {
                 OutputInstruction that = (OutputInstruction) obj;
                 return Objects.equals(port, that.port);
+
+            }
+            return false;
+        }
+    }
+
+    /**
+     *  SetQueue Instruction.
+     */
+    public static final class SetQueueInstruction implements Instruction {
+        private final long queueId;
+
+        private SetQueueInstruction(long queueId) {
+            this.queueId = queueId;
+        }
+
+        public long queueId() {
+            return queueId;
+        }
+
+        @Override
+        public Type type() {
+            return Type.QUEUE;
+        }
+        @Override
+        public String toString() {
+            return toStringHelper(type().toString())
+                    .add("queueId", queueId).toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type().ordinal(), queueId);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj instanceof SetQueueInstruction) {
+                SetQueueInstruction that = (SetQueueInstruction) obj;
+                return Objects.equals(queueId, that.queueId);
 
             }
             return false;

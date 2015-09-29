@@ -21,6 +21,7 @@ import org.onosproject.net.flow.FlowRule;
 import org.onosproject.net.flow.TrafficTreatment;
 import org.onosproject.net.flow.instructions.Instruction;
 import org.onosproject.net.flow.instructions.Instructions.OutputInstruction;
+import org.onosproject.net.flow.instructions.Instructions.SetQueueInstruction;
 import org.onosproject.net.flow.instructions.L2ModificationInstruction;
 import org.onosproject.net.flow.instructions.L2ModificationInstruction.ModEtherInstruction;
 import org.onosproject.net.flow.instructions.L2ModificationInstruction.ModVlanIdInstruction;
@@ -34,6 +35,7 @@ import org.projectfloodlight.openflow.protocol.OFFlowMod;
 import org.projectfloodlight.openflow.protocol.OFFlowModFlags;
 import org.projectfloodlight.openflow.protocol.action.OFAction;
 import org.projectfloodlight.openflow.protocol.action.OFActionOutput;
+import org.projectfloodlight.openflow.protocol.action.OFActionSetQueue;
 import org.projectfloodlight.openflow.protocol.match.Match;
 import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.MacAddress;
@@ -165,6 +167,13 @@ public class FlowModBuilderVer10 extends FlowModBuilder {
                 }
                 acts.add(action.build());
                 break;
+            case QUEUE:
+                SetQueueInstruction queue = (SetQueueInstruction) i;
+                OFActionSetQueue.Builder queueBuilder = factory().actions().buildSetQueue()
+                       .setQueueId(queue.queueId());
+                acts.add(queueBuilder.build());
+                break;
+
             case L0MODIFICATION:
             case GROUP:
             case TABLE:

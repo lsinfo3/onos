@@ -55,6 +55,8 @@ import org.projectfloodlight.openflow.protocol.action.OFActionCircuit;
 import org.projectfloodlight.openflow.protocol.action.OFActionExperimenter;
 import org.projectfloodlight.openflow.protocol.action.OFActionGroup;
 import org.projectfloodlight.openflow.protocol.action.OFActionOutput;
+import org.projectfloodlight.openflow.protocol.action.OFActionSetQueue;
+import org.projectfloodlight.openflow.protocol.action.OFActionEnqueue;
 import org.projectfloodlight.openflow.protocol.action.OFActionPopMpls;
 import org.projectfloodlight.openflow.protocol.action.OFActionSetDlDst;
 import org.projectfloodlight.openflow.protocol.action.OFActionSetDlSrc;
@@ -345,6 +347,17 @@ public class FlowEntryBuilder {
                 case PUSH_VLAN:
                     builder.pushVlan();
                     break;
+                case ENQUEUE:
+                    log.warn("Action {} hit.", act.getType());
+                    OFActionEnqueue enqueue = (OFActionEnqueue) act;
+                    builder.setQueue(enqueue.getQueueId());
+                    break;
+                case SET_QUEUE:
+                    log.warn("Action {} hit.", act.getType());
+                    OFActionSetQueue setQueue = (OFActionSetQueue) act;
+                    builder.setQueue(setQueue.getQueueId());
+                    break;
+
                 case SET_TP_DST:
                 case SET_TP_SRC:
                 case POP_PBB:
@@ -355,9 +368,7 @@ public class FlowEntryBuilder {
                 case SET_NW_ECN:
                 case SET_NW_TOS:
                 case SET_NW_TTL:
-                case SET_QUEUE:
 
-                case ENQUEUE:
                 default:
                     log.warn("Action type {} not yet implemented.", act.getType());
             }
