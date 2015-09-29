@@ -235,6 +235,7 @@ public final class DefaultTrafficTreatment implements TrafficTreatment {
             switch (instruction.type()) {
                 case DROP:
                 case OUTPUT:
+                case QUEUE:
                 case GROUP:
                 case L0MODIFICATION:
                 case L2MODIFICATION:
