@@ -24,10 +24,12 @@ import org.onosproject.net.behaviour.Pipeliner;
 import org.onosproject.net.behaviour.PipelinerContext;
 import org.onosproject.net.driver.AbstractHandlerBehaviour;
 import org.onosproject.net.flow.DefaultFlowRule;
+import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.FlowRule;
+import org.onosproject.net.flow.FlowRuleService;
+import org.onosproject.net.flow.DefaultTrafficTreatment;
 import org.onosproject.net.flow.FlowRuleOperations;
 import org.onosproject.net.flow.FlowRuleOperationsContext;
-import org.onosproject.net.flow.FlowRuleService;
 import org.onosproject.net.flowobjective.FilteringObjective;
 import org.onosproject.net.flowobjective.FlowObjectiveStore;
 import org.onosproject.net.flowobjective.ForwardingObjective;
@@ -75,6 +77,28 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
 
         appId = coreService.registerApplication(
                 "org.onosproject.driver.HpPipeline");
+
+        addGotoTable100Rule();
+
+    }
+
+    // adding Flow rule to table 0 where all packets are send to table 100
+    // as otherwise the packets get dropped in table 0
+    private void addGotoTable100Rule() {
+
+        log.warn("Adding flow rule to send all traffic from table 0 to table 100.");
+
+        FlowRule gotoTbl100 = DefaultFlowRule.builder()
+                .forDevice(deviceId)
+                .withSelector(DefaultTrafficSelector.builder().build())
+                .withTreatment(DefaultTrafficTreatment.builder().transition(100).build())
+                .withPriority(0)
+                .fromApp(appId)
+                .forTable(0)
+                .makePermanent()
+                .build();
+
+        flowRuleService.applyFlowRules(gotoTbl100);
     }
 
     @Override
