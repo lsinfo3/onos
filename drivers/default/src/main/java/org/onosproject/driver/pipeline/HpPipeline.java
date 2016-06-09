@@ -134,11 +134,13 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
         flowRuleService.apply(flowOpsBuilder.build(new FlowRuleOperationsContext() {
             @Override
             public void onSuccess(FlowRuleOperations ops) {
+                log.info("HpPipeline: Success! Flow rule operations applied. ForwardingObjective = {}", forwardObjective);
                 pass(forwardObjective);
             }
 
             @Override
             public void onError(FlowRuleOperations ops) {
+                log.warn("HpPipeline: Fail! Flow rule operations not applied. ForwardingObjective = {}", forwardObjective);
                 fail(forwardObjective, ObjectiveError.FLOWINSTALLATIONFAILED);
             }
         }));
