@@ -277,7 +277,8 @@ public class DhcpManager implements DhcpService {
             Ip4Address domainServerReply;
             IpAssignment ipAssignment;
 
-            ipAssignment = dhcpStore.getIpAssignmentFromAllocationMap(HostId.hostId(packet.getSourceMAC()));
+            ipAssignment = dhcpStore.getIpAssignmentFromAllocationMap(HostId.hostId(packet.getSourceMAC(),
+                    VlanId.vlanId(packet.getVlanID())));
 
             if (ipAssignment != null && ipAssignment.rangeNotEnforced()) {
                 subnetMaskReply = ipAssignment.subnetMask();
@@ -486,7 +487,7 @@ public class DhcpManager implements DhcpService {
                         // SELECTING state
 
 
-                        if (dhcpStore.getIpAssignmentFromAllocationMap(HostId.hostId(clientMac))
+                        if (dhcpStore.getIpAssignmentFromAllocationMap(HostId.hostId(clientMac, vlanId))
                                 .rangeNotEnforced()) {
                             outgoingPacketType = DHCPPacketType.DHCPACK;
                             Ethernet ethReply = buildReply(packet, requestedIP, (byte) outgoingPacketType.getValue());
