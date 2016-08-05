@@ -105,7 +105,7 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
     }
 
     // installing flow rule to table 100, sending all unmatched traffic to table 200
-    private void addGotoSoftwareTableRule(){
+    private void addGotoSoftwareTableRule() {
         log.info("Installing flow rule to send all unmatched traffic in table 100 to table 200.");
 
         FlowRule gotoTbl200 = DefaultFlowRule.builder()
@@ -121,7 +121,7 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
         flowRuleService.applyFlowRules(gotoTbl200);
     }
 
-    private void addTableMissAction(){
+    private void addTableMissAction() {
         log.info("Installing table miss action for table 200 (software table).");
 
         FlowRule tableMiss = DefaultFlowRule.builder()
@@ -197,9 +197,9 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
                 .fromApp(fwd.appId());
 
         // distinguishing between hardware matching flow rules and software matching flow rules
-        if(fwd.priority() >= 100){
+        if (fwd.priority() >= 100) {
             ruleBuilder.forTable(POLICY_ENGINE);
-        } else{
+        } else {
             ruleBuilder.forTable(SOFTWARE_TABLE);
         }
 
