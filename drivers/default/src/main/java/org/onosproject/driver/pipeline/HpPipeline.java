@@ -66,6 +66,7 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
     private static final int POLICY_ENGINE = 100; // Hardware matching table
     private static final int SOFTWARE_TABLE = 200;
     private static final int TIME_OUT = 30;
+    private static final int HARDWARE_TABLE_PRIORITY = 300;
 
     @Override
     public void init(DeviceId deviceId, PipelinerContext context) {
@@ -197,7 +198,7 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
                 .fromApp(fwd.appId());
 
         // distinguishing between hardware matching flow rules and software matching flow rules
-        if (fwd.priority() >= 100) {
+        if (fwd.priority() >= HARDWARE_TABLE_PRIORITY) {
             ruleBuilder.forTable(POLICY_ENGINE);
         } else {
             ruleBuilder.forTable(SOFTWARE_TABLE);
