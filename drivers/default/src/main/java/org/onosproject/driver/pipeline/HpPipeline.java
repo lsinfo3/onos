@@ -61,8 +61,10 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
     protected FlowObjectiveStore flowObjectiveStore;
 
     //FIXME: hp table numbers are configurable . Set this parameter configurable
-    private static final int HARDWARE_TABLE = 100;
-    private static final int SOFTWARE_TABLE_START = 200;
+    // using OpenFlow 1.3 multi-table model in standard mode (default)
+    private static final int TABLE_0 = 0;
+    private static final int POLICY_ENGINE = 100; // Hardware matching table
+    private static final int SOFTWARE_TABLE = 200;
     private static final int TIME_OUT = 30;
 
     @Override
@@ -78,27 +80,61 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
         appId = coreService.registerApplication(
                 "org.onosproject.driver.HpPipeline");
 
-        addGotoTable100Rule();
+        addGotoPolicyEngineRule();
+        addGotoSoftwareTableRule();
+        addTableMissAction();
 
     }
 
-    // adding Flow rule to table 0 where all packets are send to table 100
-    // as otherwise the packets get dropped in table 0
-    private void addGotoTable100Rule() {
+    // installing flow rule to table 0 sending all unmatched traffic to table 100
+    private void addGotoPolicyEngineRule() {
 
-        log.warn("Adding flow rule to send all traffic from table 0 to table 100.");
+        log.info("Installing flow rule to send all unmatched traffic in table 0 to table 100.");
 
         FlowRule gotoTbl100 = DefaultFlowRule.builder()
                 .forDevice(deviceId)
                 .withSelector(DefaultTrafficSelector.builder().build())
-                .withTreatment(DefaultTrafficTreatment.builder().transition(100).build())
+                .withTreatment(DefaultTrafficTreatment.builder().transition(POLICY_ENGINE).build())
                 .withPriority(0)
                 .fromApp(appId)
-                .forTable(0)
+                .forTable(TABLE_0)
                 .makePermanent()
                 .build();
 
         flowRuleService.applyFlowRules(gotoTbl100);
+    }
+
+    // installing flow rule to table 100, sending all unmatched traffic to table 200
+    private void addGotoSoftwareTableRule(){
+        log.info("Installing flow rule to send all unmatched traffic in table 100 to table 200.");
+
+        FlowRule gotoTbl200 = DefaultFlowRule.builder()
+                .forDevice(deviceId)
+                .withSelector(DefaultTrafficSelector.builder().build())
+                .withTreatment(DefaultTrafficTreatment.builder().transition(SOFTWARE_TABLE).build())
+                .withPriority(0)
+                .fromApp(appId)
+                .forTable(POLICY_ENGINE)
+                .makePermanent()
+                .build();
+
+        flowRuleService.applyFlowRules(gotoTbl200);
+    }
+
+    private void addTableMissAction(){
+        log.info("Installing table miss action for table 200 (software table).");
+
+        FlowRule tableMiss = DefaultFlowRule.builder()
+                .forDevice(deviceId)
+                .withSelector(DefaultTrafficSelector.builder().build())
+                .withTreatment(DefaultTrafficTreatment.builder().drop().build())
+                .withPriority(0)
+                .fromApp(appId)
+                .forTable(SOFTWARE_TABLE)
+                .makePermanent()
+                .build();
+
+        flowRuleService.applyFlowRules(tableMiss);
     }
 
     @Override
@@ -158,8 +194,14 @@ public class HpPipeline extends AbstractHandlerBehaviour implements Pipeliner {
                 .withSelector(fwd.selector())
                 .withTreatment(fwd.treatment())
                 .withPriority(fwd.priority())
-                .fromApp(fwd.appId())
-                .forTable(HARDWARE_TABLE);
+                .fromApp(fwd.appId());
+
+        // distinguishing between hardware matching flow rules and software matching flow rules
+        if(fwd.priority() >= 100){
+            ruleBuilder.forTable(POLICY_ENGINE);
+        } else{
+            ruleBuilder.forTable(SOFTWARE_TABLE);
+        }
 
         if (fwd.permanent()) {
             ruleBuilder.makePermanent();
